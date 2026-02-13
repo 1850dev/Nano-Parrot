@@ -240,18 +240,6 @@ export async function createNanoSession(): Promise<any> {
         // Try standard create
         session = await lm.create(options);
 
-        // -------------------------------------------------------
-        // ★ 追加: ウォームアップ (Warm-up)
-        // -------------------------------------------------------
-        console.log('[Nano] Warming up inference engine...');
-        
-        // 短い入力で一度推論させ、GPU/NPUを完全にアクティブにする
-        // 結果は不要なので捨てる
-        await session.prompt(" "); 
-        
-        console.log('[Nano] Warm-up complete.');
-        // -------------------------------------------------------
-
         // Notify loading complete
         if (loadingProgressCallback) {
             loadingProgressCallback({ state: 'ready', loaded: 0, total: 0, percent: 100 });
