@@ -1,4 +1,11 @@
 /**
+ * [DEPRECATED] 削除予定ファイル
+ * This file is scheduled for deletion.
+ * It has been replaced by `src/lib/dexieDb.ts`.
+ * Do not use this file.
+ */
+
+/**
  * IndexedDB Management for Analytics Logs
  */
 
