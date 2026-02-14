@@ -504,7 +504,10 @@
                 <button class="settings-btn" on:click={() => showSettings = true} title="Analysis Settings">
                     ⚙️
                 </button>
-                <a href="{base}/logs" class="logs-link">
+                <a href="{base}/logs" class="logs-link" on:click|preventDefault={() => {
+                    const win = window.open(`${base}/logs`, 'nano_parrot_logs');
+                    if (win) win.focus();
+                }}>
                     View Logs
                 </a>
             </div>
