@@ -212,7 +212,7 @@
           <span class="typing-label">Analyzing data...</span>
         </div>
       {:else if state === 'no-data'}
-        <p class="no-data-msg">集約データがまだないッピ！🦜 まずは「Generate Training Data」で集約してほしいッピね！</p>
+        <p class="no-data-msg">集約データがまだないッピ！🦜 まずは「Nano Parrot」でデータを集めてほしいッピね！</p>
       {:else if state === 'error'}
         <p class="error-msg">エラーが起きたッピ... 😢 {errorMessage}</p>
       {:else if state === 'done'}
