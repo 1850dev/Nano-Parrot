@@ -12,6 +12,7 @@ Chrome に内蔵された **Gemini Nano (Prompt API)** と **MediaPipe** を組�
 |------|------|
 | **リアルタイム人物追跡** | MediaPipe EfficientDet による人物検出と IoU ベースのカスタムトラッカーで複数人を同時にUID管理 |
 | **AI 属性分析** | Gemini Nano のマルチモーダル推論で年齢層・性別・ファッションなどを構造化 JSON で出力 |
+| **アノテーション付き画像入力** | バウンディングボックスとUIDを映像にオーバーレイした画像をAIに送信し、視覚的な人物識別を強化 |
 | **ストリーミング推論** | 生成テキストをリアルタイムに表示し、推論進捗を可視化 |
 | **カスタマイズ可能な分析** | プリセット (Basic / Retail / Security / Custom) やフィールド単位での出力設定 |
 | **セッション管理** | IndexedDB (Dexie.js) に推論ログを永続化し、時間帯別に自動集約 |
@@ -34,7 +35,10 @@ MediaPipe EfficientDet ── 人物検出 + BBox 座標
 カスタム IoU トラッカー ── UID 付与 & フレーム間追跡
   │
   ▼
-Gemini Nano (Prompt API) ── 画像 + コンテキストで一括推論
+BBox + UID オーバーレイ描画 ── アノテーション付き画像を生成
+  │
+  ▼
+Gemini Nano (Prompt API) ── アノテーション画像 + テキスト座標で一括推論
   │
   ▼
 構造化 JSON 出力 ── IndexedDB (Dexie.js) へ永続化
@@ -172,7 +176,7 @@ UI 上の **⚙️ Analysis Settings** から切り替え可能:
 | `maxTrackedUsers` | 10 | 同時トラッキングの最大人数 |
 | `iouThreshold` | 0.3 | オブジェクト間マッチングの IoU 閾値 |
 | `gracePeriodMs` | 2000 | ロスト ID の保持期間 (ms) |
-| `maxImageSize` | 512 | 推論用画像の最大サイズ (px) |
+| `maxImageSize` | 728 | 推論用画像の最大サイズ (px) |
 
 ---
 
