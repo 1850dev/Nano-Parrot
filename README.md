@@ -182,7 +182,9 @@ UI 上の **⚙️ Analysis Settings** から切り替え可能:
 
 ## 📜 ライセンス
 
-Private
+MIT License
+
+Copyright (c) 2026 1850dev
 
 ---
 
