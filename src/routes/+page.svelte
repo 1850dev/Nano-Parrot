@@ -63,6 +63,7 @@
     // History: one entry per analysis frame, containing all detected persons
     let resultsHistory: Array<{results: NanoAnalysisResult[], timestamp: string}> = [];
     let streamingText = ''; // Current streaming output
+    let annotatedImageUrl = ''; // Latest annotated image sent to AI
 
     // Subscribe to prompt settings and update config when changed
     $: if (browser && $promptSettings) {
@@ -402,7 +403,12 @@
                             
                             streamingText = ''; // Clear after complete
                             
-                            const { results, prompt } = analysisResponse;
+                            const { results, prompt, annotatedImageDataUrl } = analysisResponse;
+                            
+                            // Update annotated image preview
+                            if (annotatedImageDataUrl) {
+                                annotatedImageUrl = annotatedImageDataUrl;
+                            }
                             
                             // 3. Log Results with actual prompt - serialize structured data as JSON
                             for (const res of results) {
@@ -530,7 +536,7 @@
 
         <!-- Results Feed -->
         <aside class="results-section">
-            <ResultsDisplay history={resultsHistory} {isAnalyzing} {streamingText} />
+            <ResultsDisplay history={resultsHistory} {isAnalyzing} {streamingText} {annotatedImageUrl} />
         </aside>
     </main>
 </div>

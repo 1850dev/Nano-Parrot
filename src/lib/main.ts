@@ -135,6 +135,60 @@ function createResizedCanvas(source: HTMLVideoElement | HTMLCanvasElement): HTML
     return canvas;
 }
 
+/**
+ * Create a canvas with bounding boxes and UID labels overlaid on the video frame.
+ * This annotated canvas is sent to the AI so it can visually identify each person.
+ */
+function createAnnotatedCanvas(
+    source: HTMLVideoElement | HTMLCanvasElement,
+    detections: any[]
+): HTMLCanvasElement {
+    const sourceWidth = source instanceof HTMLVideoElement ? source.videoWidth : source.width;
+    const sourceHeight = source instanceof HTMLVideoElement ? source.videoHeight : source.height;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = sourceWidth;
+    canvas.height = sourceHeight;
+    const ctx = canvas.getContext('2d')!;
+
+    // 1. Draw the raw video frame
+    ctx.drawImage(source, 0, 0, sourceWidth, sourceHeight);
+
+    // 2. Draw bounding boxes and UID labels
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#00FF00';
+    ctx.fillStyle = '#00FF00';
+    ctx.font = 'bold 24px Arial';
+
+    for (const det of detections) {
+        const bbox = det.bbox;
+        if (!bbox || bbox.length < 4) continue;
+
+        const bx = bbox[0] * sourceWidth;
+        const by = bbox[1] * sourceHeight;
+        const bw = bbox[2] * sourceWidth;
+        const bh = bbox[3] * sourceHeight;
+
+        // Draw bounding box
+        ctx.strokeRect(bx, by, bw, bh);
+
+        // Draw UID label with background for readability
+        const uid = det.id?.toString() || det.trackingId || '?';
+        const label = `UID: ${uid}`;
+        const textMetrics = ctx.measureText(label);
+        const labelH = 28;
+        const labelY = Math.max(by - labelH - 2, 0);
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.fillRect(bx, labelY, textMetrics.width + 12, labelH);
+        ctx.fillStyle = '#00FF00';
+        ctx.fillText(label, bx + 6, labelY + 22);
+    }
+
+    console.log(`[Nano] Annotated image: ${sourceWidth}x${sourceHeight} with ${detections.length} boxes`);
+    return canvas;
+}
+
 // Helper to standardise API access
 function getLanguageModel() {
     if (typeof window === 'undefined') return null;
@@ -306,6 +360,7 @@ export async function destroyNanoSession() {
 export interface NanoStreamingResponse {
     results: NanoAnalysisResult[];
     prompt: string;
+    annotatedImageDataUrl?: string;
 }
 
 /**
@@ -367,13 +422,19 @@ export async function analyzeFrameWithNanoStreaming(
     // User prompt - no examples to avoid confusion
     const promptText = `Describe persons: ${idsStr}`;
 
+    let annotatedImageDataUrl: string | undefined;
     try {
-        // Resize image for faster processing
+        // Create annotated canvas with bounding boxes, then resize for AI
         let visualSource: HTMLCanvasElement | Blob;
         if (videoOrCanvas instanceof Blob) {
             visualSource = videoOrCanvas;
         } else {
-            visualSource = createResizedCanvas(videoOrCanvas);
+            // Draw bounding boxes + UIDs on the frame, then resize
+            const annotatedCanvas = createAnnotatedCanvas(videoOrCanvas, detections);
+            const resizedCanvas = createResizedCanvas(annotatedCanvas);
+            visualSource = resizedCanvas;
+            // Generate data URL for preview in Analysis Feed
+            annotatedImageDataUrl = resizedCanvas.toDataURL('image/jpeg', 0.7);
         }
 
         const visualInput = { type: "image", value: visualSource };
@@ -409,16 +470,16 @@ export async function analyzeFrameWithNanoStreaming(
         // Try to parse JSON from final result
         const cleanResult = fullText.replace(/```json/g, '').replace(/```/g, '').trim();
         try {
-            return { results: JSON.parse(cleanResult), prompt: promptText };
+            return { results: JSON.parse(cleanResult), prompt: promptText, annotatedImageDataUrl };
         } catch (parseError) {
             console.warn('Failed to parse JSON, returning raw text as single result');
             // Return raw text as a fallback result (use structured fields)
-            return { results: [{ uid: 'raw', age: 'unknown', sex: 'unknown', fashion: cleanResult, emotion: 'unknown', action: 'unknown', direction: 'unknown', accessories: 'unknown', posture: 'unknown'}], prompt: promptText };
+            return { results: [{ uid: 'raw', age: 'unknown', sex: 'unknown', fashion: cleanResult, emotion: 'unknown', action: 'unknown', direction: 'unknown', accessories: 'unknown', posture: 'unknown'}], prompt: promptText, annotatedImageDataUrl };
         }
 
     } catch (e) {
         console.error('Nano Analysis Failed:', e);
-        return { results: [], prompt: promptText };
+        return { results: [], prompt: promptText, annotatedImageDataUrl };
     }
 }
 

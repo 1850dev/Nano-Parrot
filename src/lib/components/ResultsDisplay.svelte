@@ -6,6 +6,7 @@
     export let history: Array<{results: NanoAnalysisResult[], timestamp: string}> = [];
     export let isAnalyzing = false;
     export let streamingText = '';
+    export let annotatedImageUrl: string = '';
 </script>
 
 <div class="results-container">
@@ -18,6 +19,16 @@
     </div>
     
     <div class="results-list">
+        <!-- Annotated Image Preview (what AI sees) -->
+        {#if annotatedImageUrl}
+            <div class="annotated-preview">
+                <div class="preview-header">
+                    <span class="preview-label">📷 AI Input Preview</span>
+                </div>
+                <img src={annotatedImageUrl} alt="Annotated frame sent to AI" class="preview-image" />
+            </div>
+        {/if}
+
         <!-- Streaming Output (Live Generation) -->
         {#if streamingText}
             <div class="result-item streaming" in:slide|local={{ duration: 200 }}>
@@ -355,6 +366,35 @@
     .detail-tag.posture {
         background-color: var(--black-50);
         color: var(--text-secondary);
+    }
+
+    /* Annotated Image Preview */
+    .annotated-preview {
+        background-color: var(--black-50);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .preview-header {
+        padding: 6px 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--black-30);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .preview-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .preview-image {
+        width: 100%;
+        display: block;
     }
 
 </style>

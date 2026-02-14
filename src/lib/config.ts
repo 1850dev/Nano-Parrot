@@ -25,7 +25,7 @@ export const TRACKER_CONFIG = {
 
 // VLM Analysis Configuration (Chrome Built-in AI)
 export const VLM_CONFIG = {
-  maxImageSize: 512,        // Max dimension for resized images
+  maxImageSize: 728,        // Max dimension for resized images
   systemPrompt: `Analyze each person. Use the exact UID provided.
 age: child/teen/20s/30s/40s/50s/60s+
 sex: male/female
